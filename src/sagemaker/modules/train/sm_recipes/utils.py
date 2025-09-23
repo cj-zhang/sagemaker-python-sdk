@@ -136,6 +136,7 @@ def _get_trainining_recipe_gpu_model_name_and_script(model_type: str):
         "mistral": ("mistral", "mistral_pretrain.py"),
         "mixtral": ("mixtral", "mixtral_pretrain.py"),
         "deepseek": ("deepseek", "deepseek_pretrain.py"),
+        "gpt_oss": ("custom_model", "custom_pretrain.py"),
     }
 
     for key in model_type_to_script:
@@ -303,6 +304,13 @@ def _get_args_from_nova_recipe(
                 'Nova distillation job recipe requires "kms_key" field in "training_config"'
             )
         args["hyperparameters"]["kms_key"] = kms_key
+
+    # Handle eval custom lambda configuration
+    if recipe.get("evaluation", {}):
+        processor = recipe.get("processor", {})
+        lambda_arn = processor.get("lambda_arn", "")
+        if lambda_arn:
+            args["hyperparameters"]["eval_lambda_arn"] = lambda_arn
 
     _register_custom_resolvers()
 

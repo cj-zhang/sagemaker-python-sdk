@@ -99,6 +99,7 @@ def _get_training_recipe_gpu_script(code_dir, recipe, source_dir):
         "mistral": ("mistral", "mistral_pretrain.py"),
         "mixtral": ("mixtral", "mixtral_pretrain.py"),
         "deepseek": ("deepseek", "deepseek_pretrain.py"),
+        "gpt_oss": ("custom_model", "custom_pretrain.py"),
     }
 
     if "model" not in recipe:
@@ -1222,6 +1223,13 @@ class PyTorch(Framework):
                     'Nova distillation job recipe requires "kms_key" field in "training_config"'
                 )
             args["hyperparameters"]["kms_key"] = kms_key
+
+        # Handle eval custom lambda configuration
+        if recipe.get("evaluation", {}):
+            processor = recipe.get("processor", {})
+            lambda_arn = processor.get("lambda_arn", "")
+            if lambda_arn:
+                args["hyperparameters"]["eval_lambda_arn"] = lambda_arn
 
         # Resolve and save the final recipe
         self._recipe_resolve_and_save(recipe, recipe_name, args["source_dir"])
